@@ -947,14 +947,16 @@ section.sheet:first-of-type { margin-top: 0; }
   .exploded .layer video { max-width: 92%; max-height: 92%; }
   .layer-tag { font-size: 8.5px; letter-spacing: 0.1em; }
   .drop-note { font-size: 8.5px; letter-spacing: 0.12em; }
-  .hero-name { font-size: clamp(28px, 10vw, 118px); }
+  .hero-name { font-size: clamp(24px, 8.5vw, 118px); }
+  .contact-big { font-size: clamp(24px, 8vw, 92px); }
   .op-row { grid-template-columns: 60px 1fr; }
   .op-detail, .op-date { grid-column: 2; }
   .rail { display: none; }
   .mobile-nav { display: flex; }
   body { cursor: auto; }
   .tb-row { display: grid; grid-template-columns: 1fr 1fr; }
-  .tb-row > span { border-left: none; }
+  .tb-row > span { min-width: 0; border-left: none; padding: 12px 12px 10px; }
+  .tb-row b { font-size: 17px !important; }
   .tb-row > span:nth-child(2n) { border-left: 1.5px solid var(--ink); }
   .tb-row > span:nth-child(n+3) { border-top: 1.5px solid var(--ink); }
   /* spec table becomes a stacked parts list — no horizontal scrolling */
