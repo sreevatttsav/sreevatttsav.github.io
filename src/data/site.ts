@@ -191,11 +191,10 @@ export const flagships: Flagship[] = [
 ];
 
 export const archive = [
-  { id: 'battlebot', name: 'TEAM GNARLY BATTLE-BOT', note: '15 KG CLASS — 2ND PLACE, VIT VELLORE', img: '/photos/battlebot.jpg' },
+  { id: 'battlebot', name: 'TEAM GNARLY BATTLE-BOT', note: '15 KG CLASS — 2ND PLACE, VIT VELLORE', img: '/photos/battlebot.png' },
   { id: 'flexure', name: 'SERPENTINE FLEXURE SPRING', note: 'REPLACES COIL SPRINGS — LESS MATERIAL', img: '/photos/flexure.png' },
   { id: 'ornithopter', name: 'ORNITHOPTER WING', note: 'BIRD-BORROWED MECHANISM STUDY', img: '/photos/ornithopter.png' },
   { id: 'ipod', name: 'AI IPOD REMIX', note: 'CLASSIC FORM, NEW BRAIN', img: '/photos/ipod.png' },
-  { id: 'enclosures', name: 'DRONE ELECTRONICS ENCLOSURES', note: 'CROSS-COMPATIBLE VARIANTS', img: '/photos/enclosures.png' },
 ];
 
 export const experience = [
