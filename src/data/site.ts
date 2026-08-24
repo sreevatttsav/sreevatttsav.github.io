@@ -144,9 +144,9 @@ export const flagships: Flagship[] = [
       { value: '30', label: 'TEAM MEMBERS' },
     ],
     shots: [
-      { img: '/renders/basketball-1.jpg', tag: 'FULL BOT' },
-      { img: '/renders/basketball-2.jpg', tag: 'INTAKE ROLLER' },
       { img: '/renders/basketball-3.jpeg', tag: 'PICKER KINEMATICS' },
+      { img: '/renders/basketball-2.jpg', tag: 'INTAKE ROLLER' },
+      { img: '/renders/basketball-1.jpg', tag: 'FULL BOT' },
     ],
   },
   {
