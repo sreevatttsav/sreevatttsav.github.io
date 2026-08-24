@@ -459,13 +459,14 @@ section.sheet:first-of-type { margin-top: 0; }
 }
 
 .titleblock { border: 2px solid var(--ink); position: relative; }
+.titleblock > span { display: block; border-bottom: 1.5px solid var(--ink); }
 .titleblock > div { border-bottom: 1.5px solid var(--ink); padding: 14px 18px; }
 .titleblock > div:last-child { border-bottom: none; }
-.tb-row { display: flex; gap: 0; }
+.tb-row { display: flex; gap: 0; padding: 0; }
 .tb-row > span {
   flex: 1;
   border-left: 1.5px solid var(--ink);
-  padding: 10px 16px 8px;
+  padding: 14px 18px 12px;
   transition: background 0.2s;
 }
 .tb-row > span:first-child { border-left: none; }

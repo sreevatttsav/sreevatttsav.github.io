@@ -19,8 +19,8 @@ const nav = [
   { id: 'planetary-actuator', label: '04 · GEARBOX' },
   { id: 'archive', label: '05 · BIN' },
   { id: 'experience', label: '06 · OPS' },
-  { id: 'contact', label: '07 · END' },
-  { label: '08 · LOG', href: '/blog' },
+  { id: 'field-log', label: '07 · LOG' },
+  { id: 'contact', label: '08 · END' },
 ];
 
 const capabilities = ['DFM', 'FABRICATION', 'VISION TRACKING', 'PX4 FIRMWARE', 'PLANETARY GEARS', 'FLEXURES', 'LASER CUTTING', 'RAPID PROTOTYPING'];
@@ -75,7 +75,7 @@ const capabilities = ['DFM', 'FABRICATION', 'VISION TRACKING', 'PX4 FIRMWARE', '
   {flagships.map((p) => (
     <section class="sheet" id={p.id} data-draw>
       <i class="corner-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></i>
-      <span class="sheet-tab">{p.sheet} / 07</span>
+      <span class="sheet-tab">{p.sheet} / 08</span>
 
       <div class="proj-head">
         <h2 class="display proj-title" data-reveal>{p.title}</h2>
@@ -129,10 +129,10 @@ const capabilities = ['DFM', 'FABRICATION', 'VISION TRACKING', 'PX4 FIRMWARE', '
     </section>
   ))}
 
-  <!-- SHT 04 : ARCHIVE BIN -->
+  <!-- SHT 05 : ARCHIVE BIN -->
   <section class="sheet" id="archive" data-draw>
     <i class="corner-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></i>
-    <span class="sheet-tab">SHT 05 / 07</span>
+    <span class="sheet-tab">SHT 05 / 08</span>
     <div class="kicker" data-reveal>MISC COMPONENTS — UNSORTED</div>
     <h2 class="display proj-title" style={`margin-top: 8px; --d:100ms;`} data-reveal>
       PROJECT <span style="color: var(--accent)">BIN</span>
@@ -149,10 +149,10 @@ const capabilities = ['DFM', 'FABRICATION', 'VISION TRACKING', 'PX4 FIRMWARE', '
     </div>
   </section>
 
-  <!-- SHT 05 : EXPERIENCE AS MACHINING SCHEDULE -->
+  <!-- SHT 06 : EXPERIENCE AS MACHINING SCHEDULE -->
   <section class="sheet" id="experience" data-draw>
     <i class="corner-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></i>
-    <span class="sheet-tab">SHT 06 / 07</span>
+    <span class="sheet-tab">SHT 06 / 08</span>
     <div class="kicker" data-reveal>PROCESS PLAN — MACHINING SCHEDULE</div>
     <h2 class="display proj-title" style={`margin-top: 8px; --d:100ms;`} data-reveal>
       OPERATIONS <span style="color: var(--accent)">LOG</span>
@@ -173,10 +173,10 @@ const capabilities = ['DFM', 'FABRICATION', 'VISION TRACKING', 'PX4 FIRMWARE', '
     </div>
   </section>
 
-  <!-- ADDENDUM : FIELD LOG (LATEST ENTRIES) -->
+  <!-- SHT 07 : FIELD LOG (LATEST ENTRIES) -->
   <section class="sheet" id="field-log" data-draw>
     <i class="corner-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></i>
-    <span class="sheet-tab">ADDENDUM A</span>
+    <span class="sheet-tab">SHT 07 / 08</span>
     <div class="proj-head">
       <div>
         <div class="kicker" data-reveal>NOTES FOR MYSELF // SHARED IN CASE THEY HELP</div>
@@ -201,10 +201,10 @@ const capabilities = ['DFM', 'FABRICATION', 'VISION TRACKING', 'PX4 FIRMWARE', '
     </div>
   </section>
 
-  <!-- SHT 06 : CONTACT / FOOTER -->
+  <!-- SHT 08 : CONTACT / FOOTER -->
   <section class="sheet contact-sheet" id="contact" data-draw>
     <i class="corner-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></i>
-    <span class="sheet-tab">SHT 07 / 07</span>
+    <span class="sheet-tab">SHT 08 / 08</span>
     <div class="kicker" style="color: var(--accent);" data-reveal>END OF DRAWING SET</div>
     <h2 class="display contact-big" style={`margin-top: 14px; --d:120ms;`} data-reveal>
       THANK YOU<br />FOR <em>INSPECTING.</em>
@@ -227,7 +227,7 @@ const capabilities = ['DFM', 'FABRICATION', 'VISION TRACKING', 'PX4 FIRMWARE', '
     <div class="footer-tb">
       <span>DRAWN BY: <b>{site.name}</b></span>
       <span>CHECKED BY: <b>YOU</b></span>
-      <span>SHEET: <b>07 OF 07</b></span>
+      <span>SHEET: <b>08 OF 08</b></span>
       <span>{site.rev}</span>
     </div>
   </section>
