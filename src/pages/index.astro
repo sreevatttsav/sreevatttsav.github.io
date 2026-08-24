@@ -119,7 +119,7 @@ const capabilities = ['DFM', 'FABRICATION', 'VISION TRACKING', 'PX4 FIRMWARE', '
             <tbody>
               {p.specs.map((s, i) => (
                 <tr style={`--row:${i}`}>
-                  <td>{s.item}</td><td>{s.part}</td><td>{s.material}</td><td>{s.qty}</td><td>{s.note}</td>
+                  <td data-label="Item">{s.item}</td><td data-label="Part">{s.part}</td><td data-label="Material">{s.material}</td><td data-label="Qty">{s.qty}</td><td data-label="Notes">{s.note}</td>
                 </tr>
               ))}
             </tbody>

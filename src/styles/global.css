@@ -939,7 +939,15 @@ section.sheet:first-of-type { margin-top: 0; }
 @media (max-width: 900px) {
   main { padding: calc(var(--frame-inset) + 16px); padding-bottom: calc(var(--frame-inset) + 76px); }
   .proj-grid { grid-template-columns: 1fr; }
-  .exploded { position: relative; top: 0; aspect-ratio: 4/3; }
+  .exploded { position: relative; top: 0; aspect-ratio: 1 / 1.1; }
+  .exploded .layer { inset: 11% 8%; }
+  .exploded .layer[data-depth="2"] { inset: 14% 11%; }
+  .exploded .layer[data-depth="3"] { inset: 17% 14%; }
+  .exploded .layer img,
+  .exploded .layer video { max-width: 92%; max-height: 92%; }
+  .layer-tag { font-size: 8.5px; letter-spacing: 0.1em; }
+  .drop-note { font-size: 8.5px; letter-spacing: 0.12em; }
+  .hero-name { font-size: clamp(28px, 10vw, 118px); }
   .op-row { grid-template-columns: 60px 1fr; }
   .op-detail, .op-date { grid-column: 2; }
   .rail { display: none; }
@@ -949,9 +957,28 @@ section.sheet:first-of-type { margin-top: 0; }
   .tb-row > span { border-left: none; }
   .tb-row > span:nth-child(2n) { border-left: 1.5px solid var(--ink); }
   .tb-row > span:nth-child(n+3) { border-top: 1.5px solid var(--ink); }
-  .spec-card table { min-width: 560px; }
-  .spec-card th { padding: 6px 9px; font-size: 10px; letter-spacing: 0.08em; }
-  .spec-card td { padding: 6px 9px; font-size: 10.5px; }
+  /* spec table becomes a stacked parts list — no horizontal scrolling */
+  .spec-card table { min-width: 0; }
+  .spec-card thead { display: none; }
+  .spec-card tbody tr { display: block; padding: 10px 14px; }
+  .spec-card tbody tr + tr { border-top: 1px dashed rgba(28, 27, 24, 0.35); }
+  .spec-card td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 14px;
+    padding: 2.5px 0;
+    border-bottom: none;
+    font-size: 11px;
+  }
+  .spec-card td::before {
+    content: attr(data-label);
+    flex: none;
+    color: rgba(28, 27, 24, 0.55);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
   .footer-tb { flex-direction: column; }
   .footer-tb span { white-space: normal; border-right: none; border-bottom: 1.5px solid rgba(232, 228, 218, 0.5); }
   .footer-tb span:last-child { border-bottom: none; }

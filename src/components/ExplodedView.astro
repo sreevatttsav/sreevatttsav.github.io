@@ -90,8 +90,9 @@ const layerDims = layers.map((l) => (l.img ? IMG_DIMS[l.img.replace(/^\//, '')] 
       p += (target() - p) * 0.12; // critically-damped feel
       if (Math.abs(target() - p) < 0.0005) p = target();
 
-      const spread = p * 160; // px of vertical separation per depth step
-      const drift = p * 26;   // alternating horizontal drift
+      const spreadBase = Math.min(160, root.offsetWidth * 0.28); // px of vertical separation per depth step
+      const drift = p * Math.min(26, root.offsetWidth * 0.055);  // alternating horizontal drift
+      const spread = p * spreadBase;
       layers.forEach((l, i) => {
         const d = i - (layers.length - 1) / 2;
         const side = i % 2 === 0 ? 1 : -1;
