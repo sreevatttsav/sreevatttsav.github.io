@@ -64,7 +64,7 @@ export const flagships: Flagship[] = [
       { value: '3-DOMAIN', label: 'MECH / ELEC / FW' },
     ],
     shots: [
-      { video: '/renders/rover-video.mp4', img: '/renders/rover-1.jpeg', tag: 'ASSEMBLED — TEST FOOTAGE' },
+      { img: '/renders/rover-1.jpeg', tag: 'ASSEMBLED — ISO VIEW' },
       { img: '/renders/rover-2.jpeg', tag: 'ELECTRONICS ENCLOSURE' },
       { img: '/renders/rover-3.jpeg', tag: 'PAN-TILT TURRET' },
     ],
