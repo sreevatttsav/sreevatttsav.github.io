@@ -1,0 +1,54 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { site } from '../../data/site';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+
+const nav = [
+  { label: '00 · HOME', href: '/' },
+  { label: '01 · DRAWINGS', href: '/#hero' },
+  { label: '02 · LOG', href: '/blog' },
+];
+---
+
+<Base nav={nav} title={`Field Log — ${site.name}`}>
+  <section class="sheet" id="log" data-draw>
+    <i class="corner-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></i>
+    <span class="sheet-tab">SHT L / L</span>
+
+    <div class="kicker" data-reveal>NOTES FOR MYSELF // SHARED IN CASE THEY HELP</div>
+    <h2 class="display proj-title" style={`margin-top: 8px; --d:100ms;`} data-reveal>
+      FIELD <span style="color: var(--accent)">LOG</span>
+    </h2>
+    <p style={`max-width: 52ch; margin-top: 14px; --d:180ms;`} data-reveal>
+      {site.name.split(' ')[0]}'s notes — first-principles thinking, engineering post-mortems,
+      and things learned the slow way.
+    </p>
+
+    <div class="log-rows" data-reveal style={`--d:240ms;`}>
+      {posts.map((post) => (
+        <a class="log-row" href={`/blog/${post.id}/`}>
+          <span class="log-date">{fmt(post.data.date)}</span>
+          <span class="log-main">
+            <strong>{post.data.title}</strong>
+            <em>{post.data.description}</em>
+          </span>
+          <span class="log-tags">{post.data.tags.map((t) => <i>{t}</i>)}</span>
+        </a>
+      ))}
+      {posts.length === 0 && (
+        <p class="dim-label">NO ENTRIES ON RECORD — CHECK BACK SOON.</p>
+      )}
+    </div>
+
+    <div class="contact-links">
+      <a href="/">← DRAWING SET</a>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,234 @@
+---
+import Base from '../layouts/Base.astro';
+import ExplodedView from '../components/ExplodedView.astro';
+import ArchiveCard from '../components/ArchiveCard.astro';
+import { getCollection } from 'astro:content';
+import { site, flagships, archive, experience } from '../data/site';
+
+const latestPosts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+const fmtDate = (d: Date) =>
+  d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+
+const nav = [
+  { id: 'hero', label: '00 · TITLE' },
+  { id: 'rover', label: '01 · ROVER' },
+  { id: 'interceptor-drone', label: '02 · DRONE' },
+  { id: 'basketball-bot', label: '03 · B-BOT' },
+  { id: 'planetary-actuator', label: '04 · GEARBOX' },
+  { id: 'archive', label: '05 · BIN' },
+  { id: 'experience', label: '06 · OPS' },
+  { id: 'contact', label: '07 · END' },
+  { label: '08 · LOG', href: '/blog' },
+];
+
+const capabilities = ['DFM', 'FABRICATION', 'VISION TRACKING', 'PX4 FIRMWARE', 'PLANETARY GEARS', 'FLEXURES', 'LASER CUTTING', 'RAPID PROTOTYPING'];
+---
+
+<Base nav={nav} title={`${site.name} — ${site.role}`}>
+  <!-- SHT 00 : HERO TITLE BLOCK -->
+  <section class="sheet hero" id="hero" data-draw>
+    <i class="corner-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></i>
+    <i class="scanline" aria-hidden="true"></i>
+    <div class="kicker" data-reveal>ENGINEERING PORTFOLIO // {site.rev} // THIRD ANGLE PROJECTION</div>
+    <h1 class="display hero-name" style={`margin: 18px 0 26px;`} data-reveal>
+      <span class="mask"><span style="--d:150ms">{site.name.split(' ')[0]}</span></span>
+      <span class="mask"><span class="outline" style="--d:300ms">{site.name.split(' ').slice(1).join(' ')}</span></span>
+    </h1>
+
+    <div class="titleblock" data-draw>
+      <span class="dim-label" style="padding: 10px 16px; display:block;">DRAWN BY: {site.role} — NIT KARNATAKA '27</span>
+      <div class="tb-row">
+        <span><span class="dim-label">SCALE</span><br /><b class="display" style="font-size:20px;">1:1</b></span>
+        <span><span class="dim-label">MATERIAL</span><br /><b class="display" style="font-size:20px;">AL + CODE</b></span>
+        <span><span class="dim-label">TOLERANCES</span><br /><b class="display" style="font-size:20px;">±0.1</b></span>
+        <span><span class="dim-label">REV</span><br /><b class="display" style="font-size:20px; color: var(--accent);">{site.rev.replace('REV ', '')}</b></span>
+      </div>
+    </div>
+
+    <p style={`margin-top: 28px; max-width: 56ch; font-size: clamp(15px, 2vw, 19px); --d:320ms;`} data-reveal>
+      {site.tagline}
+    </p>
+    <p class="summary" style={`color: var(--accent); margin-top: 12px; --d:420ms;`} data-reveal>
+      {site.subTagline}
+    </p>
+
+    <div style={`margin-top: 36px; --d:560ms;`} class="scroll-hint" data-reveal>
+      <span class="arrow">▼</span> SCROLL TO INSPECT DRAWING SET
+    </div>
+
+    <a class="log-cta" href="/blog" data-reveal style={`--d:640ms;`}>
+      READ THE FIELD LOG <span aria-hidden="true">→</span>
+      <i>{latestPosts.length} ENTRIES ON RECORD</i>
+    </a>
+
+    <!-- capability strip: infinite ticker -->
+    <div class="capability-strip" data-reveal style={`--d:680ms`} aria-label="Capabilities">
+      <div class="ticker-track">
+        {capabilities.map((c) => <span>{c}</span>)}
+      </div>
+    </div>
+  </section>
+
+  <!-- FLAGSHIP PROJECT SHEETS -->
+  {flagships.map((p) => (
+    <section class="sheet" id={p.id} data-draw>
+      <i class="corner-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></i>
+      <span class="sheet-tab">{p.sheet} / 07</span>
+
+      <div class="proj-head">
+        <h2 class="display proj-title" data-reveal>{p.title}</h2>
+        <span class="proj-sub" data-reveal style={`--d:120ms`}>{p.subtitle}</span>
+        {p.stamp && <span class="stamp" data-reveal>{p.stamp}</span>}
+      </div>
+      {p.status && <div class="kicker" style={`margin-bottom: 6px; --d:180ms;`} data-reveal>{p.status}</div>}
+
+      <p class="summary" data-reveal style={`--d:220ms`}>{p.summary}</p>
+
+      <div class="proj-grid">
+        <ExplodedView layers={p.shots} classified={p.classified} note={!p.classified && p.shots.some((s) => s.img || s.video) ? 'SCROLL TO EXPLODE // LIVE LAYERS' : undefined} />
+
+        <div class="story">
+          {p.story.map((s, i) => (
+            <div data-reveal style={`--d:${300 + i * 110}ms`}>
+              <h3>{s.heading}</h3>
+              <p>{s.body}</p>
+            </div>
+          ))}
+
+          <div style="margin-top: 30px;">
+            {p.dims.map((d, i) => (
+              <div class="dim" data-reveal style={`--d:${550 + i * 130}ms`}>
+                <b>{d.value}</b>
+                <span class="dim-line"></span>
+                <span class="dim-label">{d.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div class="spec-card" data-reveal data-rv="left" style={`--d:150ms`}>
+        <header><span>SPEC SHEET</span><b>{p.title} — REV A</b></header>
+        <div class="spec-scroll">
+          <table>
+            <thead>
+              <tr><th>ITEM</th><th>PART</th><th>MATERIAL</th><th>QTY</th><th>NOTES</th></tr>
+            </thead>
+            <tbody>
+              {p.specs.map((s, i) => (
+                <tr style={`--row:${i}`}>
+                  <td>{s.item}</td><td>{s.part}</td><td>{s.material}</td><td>{s.qty}</td><td>{s.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  ))}
+
+  <!-- SHT 04 : ARCHIVE BIN -->
+  <section class="sheet" id="archive" data-draw>
+    <i class="corner-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></i>
+    <span class="sheet-tab">SHT 05 / 07</span>
+    <div class="kicker" data-reveal>MISC COMPONENTS — UNSORTED</div>
+    <h2 class="display proj-title" style={`margin-top: 8px; --d:100ms;`} data-reveal>
+      PROJECT <span style="color: var(--accent)">BIN</span>
+    </h2>
+    <p style={`max-width: 52ch; margin-top: 14px; --d:180ms;`} data-reveal>
+      Smaller builds, studies, and side quests. Click any card to open its render.
+    </p>
+    <div class="bin-grid">
+      {archive.map((a, i) => (
+        <div data-reveal data-rv="pop" style={`--d:${240 + i * 70}ms`}>
+          <ArchiveCard name={a.name} note={a.note} img={a.img} />
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- SHT 05 : EXPERIENCE AS MACHINING SCHEDULE -->
+  <section class="sheet" id="experience" data-draw>
+    <i class="corner-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></i>
+    <span class="sheet-tab">SHT 06 / 07</span>
+    <div class="kicker" data-reveal>PROCESS PLAN — MACHINING SCHEDULE</div>
+    <h2 class="display proj-title" style={`margin-top: 8px; --d:100ms;`} data-reveal>
+      OPERATIONS <span style="color: var(--accent)">LOG</span>
+    </h2>
+
+    <div class="ops" data-reveal style={`--d:200ms`}>
+      {experience.map((e) => (
+        <div class="op-row">
+          <span class="op-id">{e.op}</span>
+          <span>
+            <span class="op-org">{e.org}</span>
+            <span class="op-role">{e.role}</span>
+          </span>
+          <span class="op-detail">{e.detail}</span>
+          <span class="op-date">{e.date}</span>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- ADDENDUM : FIELD LOG (LATEST ENTRIES) -->
+  <section class="sheet" id="field-log" data-draw>
+    <i class="corner-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></i>
+    <span class="sheet-tab">ADDENDUM A</span>
+    <div class="proj-head">
+      <div>
+        <div class="kicker" data-reveal>NOTES FOR MYSELF // SHARED IN CASE THEY HELP</div>
+        <h2 class="display proj-title" style={`margin-top: 8px; --d:100ms;`} data-reveal>
+          FIELD <span style="color: var(--accent)">LOG</span>
+        </h2>
+      </div>
+      <a class="log-more" href="/blog" data-reveal style={`--d:160ms;`}>ALL ENTRIES →</a>
+    </div>
+
+    <div class="log-rows" data-reveal style={`--d:220ms;`}>
+      {latestPosts.map((post) => (
+        <a class="log-row" href={`/blog/${post.id}/`}>
+          <span class="log-date">{fmtDate(post.data.date)}</span>
+          <span class="log-main">
+            <strong>{post.data.title}</strong>
+            <em>{post.data.description}</em>
+          </span>
+          <span class="log-tags">{post.data.tags.map((t) => <i>{t}</i>)}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- SHT 06 : CONTACT / FOOTER -->
+  <section class="sheet contact-sheet" id="contact" data-draw>
+    <i class="corner-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></i>
+    <span class="sheet-tab">SHT 07 / 07</span>
+    <div class="kicker" style="color: var(--accent);" data-reveal>END OF DRAWING SET</div>
+    <h2 class="display contact-big" style={`margin-top: 14px; --d:120ms;`} data-reveal>
+      THANK YOU<br />FOR <em>INSPECTING.</em>
+    </h2>
+    <p style={`margin-top: 22px; max-width: 46ch; font-family: var(--mono); font-size: 13px; letter-spacing: 0.08em; --d:260ms;`} data-reveal>
+      WOULD LOVE TO BUILD SOMETHING COOL WITH YOU. ALL PARTS AVAILABLE FOR CONSULTATION.
+    </p>
+
+    <div class="contact-links">
+      {[
+        { label: site.email.toUpperCase(), href: `mailto:${site.email}` },
+        { label: site.phone, href: `tel:${site.phone.replace(/\s/g, '')}` },
+        ...site.socials.map((s) => ({ label: s.label.toUpperCase(), href: s.href })),
+      ].map((l, i) => (
+        <a href={l.href} target={l.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer"
+           data-reveal style={`--d:${340 + i * 80}ms`}>{l.label}</a>
+      ))}
+    </div>
+
+    <div class="footer-tb">
+      <span>DRAWN BY: <b>{site.name}</b></span>
+      <span>CHECKED BY: <b>YOU</b></span>
+      <span>SHEET: <b>07 OF 07</b></span>
+      <span>{site.rev}</span>
+    </div>
+  </section>
+</Base>

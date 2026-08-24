@@ -1,0 +1,159 @@
+---
+interface Layer {
+  tag: string;
+  img?: string;
+  video?: string;
+}
+interface Props {
+  layers: Layer[];
+  hud?: string;
+  note?: string;
+  classified?: boolean;
+}
+const { layers, hud = 'ISO VIEW // SCALE 1:1', note, classified = false } = Astro.props;
+const noteText = note ?? (classified ? 'CLEARANCE PENDING — RENDERS SEALED' : 'DROP RENDER HERE — public/renders/');
+const tapeText = 'CONFIDENTIAL /// UNDER CONSTRUCTION /// ';
+
+const IMG_DIMS: Record<string, [number, number]> = {
+  'photos/flexure.png': [652, 387],
+  'renders/actuator-1.png': [606, 568],
+  'renders/actuator-2.png': [1280, 1058],
+  'renders/actuator-3.png': [1068, 844],
+  'renders/basketball-1.jpg': [963, 1280],
+  'renders/basketball-2.jpg': [1800, 1350],
+  'renders/basketball-3.jpeg': [1600, 1204],
+  'renders/rover-1.jpeg': [1280, 960],
+  'renders/rover-2.jpeg': [1280, 960],
+  'renders/rover-3.jpeg': [720, 1280],
+};
+const layerDims = layers.map((l) => (l.img ? IMG_DIMS[l.img.replace(/^\//, '')] : undefined));
+---
+
+<div class:list={['exploded', { 'is-classified': classified }]} data-exploded>
+  <div class="viewport-hud">
+    <span>{hud}</span>
+    {classified ? <span>STATUS: CLASSIFIED</span> : <span data-readout>EXPLODE: 000%</span>}
+  </div>
+  <div class="exploded-inner" data-inner>
+    <div class="axis" aria-hidden="true"></div>
+    <div class="reticle" aria-hidden="true"></div>
+    {layers.map((layer, i) => (
+      <div class:list={['layer', { 'has-media': !classified && (layer.img || layer.video) }]} data-layer data-depth={i + 1}>
+        {!classified && layer.video ? (
+          <video src={layer.video} poster={layer.img} muted loop playsinline autoplay preload="metadata" aria-label={layer.tag}></video>
+        ) : !classified && layer.img && (
+          <img src={layer.img} alt={layer.tag} loading="lazy" width={layerDims[i]?.[0]} height={layerDims[i]?.[1]} onerror="this.remove()" />
+        )}
+        <span class="tag layer-tag">LAYER {String(i + 1).padStart(2, '0')} — {classified ? '██████████' : layer.tag}</span>
+      </div>
+    ))}
+  </div>
+  {classified && (
+    <>
+      <div class="classified-overlay">
+        <span class="classified-stamp">Confidential</span>
+        <span class="classified-sub">UNDER CONSTRUCTION — DO NOT DISTRIBUTE</span>
+      </div>
+      <div class="tape-band t1" aria-hidden="true"><span>{tapeText.repeat(12)}</span></div>
+      <div class="tape-band t2" aria-hidden="true"><span>{tapeText.repeat(12)}</span></div>
+      <i class="tape-frame" aria-hidden="true"></i>
+    </>
+  )}
+  <div class="drop-note">{noteText}</div>
+</div>
+
+<script>
+  /* one bundled initializer for every [data-exploded] on the page —
+     (the old per-instance inline script used currentScript.closest(), which
+     can never find the component root: the script renders as its sibling) */
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const finePointer = window.matchMedia('(pointer: fine)').matches;
+
+  document.querySelectorAll('[data-exploded]').forEach((root) => {
+    const inner = root.querySelector('[data-inner]');
+    const readout = root.querySelector('[data-readout]');
+    const layers = [...root.querySelectorAll('[data-layer]')];
+    const section = root.closest('section');
+    const classified = root.classList.contains('is-classified');
+    let p = 0; // smoothed explode progress
+    let tRX = 0, tRY = 0, cRX = 0, cRY = 0; // pointer tilt state
+
+    const target = () => {
+      if (!section) return 0;
+      const r = section.getBoundingClientRect();
+      const vh = window.innerHeight;
+      // progress 0→1 while section crosses the viewport
+      return Math.min(1, Math.max(0, (vh - r.top) / (r.height + vh)));
+    };
+
+    const render = () => {
+      p += (target() - p) * 0.12; // critically-damped feel
+      if (Math.abs(target() - p) < 0.0005) p = target();
+
+      const spread = p * 160; // px of vertical separation per depth step
+      const drift = p * 26;   // alternating horizontal drift
+      layers.forEach((l, i) => {
+        const d = i - (layers.length - 1) / 2;
+        const side = i % 2 === 0 ? 1 : -1;
+        const rise = d < 0 ? spread * 0.7 : spread; // top layer rises less — its tag stays in frame
+        l.style.transform = `translate(${side * d * drift}px, ${d * rise}px) rotate(${d * p * 2.6}deg)`;
+        // lower layers materialize as they separate — rest state reads as one clean assembly
+        if (d > 0) l.style.opacity = Math.min(1, p * 1.9).toFixed(3);
+        const tag = l.querySelector('.tag');
+        if (tag) tag.style.opacity = Math.min(1, p * 2.2).toFixed(3);
+      });
+      root.style.setProperty('--p', p.toFixed(4));
+      if (readout) readout.textContent = `EXPLODE: ${String(Math.round(p * 100)).padStart(3, '0')}%`;
+
+      cRX += (tRX - cRX) * 0.08;
+      cRY += (tRY - cRY) * 0.08;
+      if (inner) inner.style.transform = `rotateX(${cRX.toFixed(3)}deg) rotateY(${cRY.toFixed(3)}deg)`;
+    };
+
+    let raf = 0;
+    const loop = () => {
+      render();
+      raf = requestAnimationFrame(loop);
+    };
+    const stopLoop = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    };
+
+    if (!reduced && !classified) {
+      /* run the animation loop only while the root is on screen */
+      new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (!raf) raf = requestAnimationFrame(loop);
+          } else {
+            stopLoop();
+          }
+        });
+      }).observe(root);
+
+      /* pause footage when the viewport is off-screen */
+      const vid = root.querySelector('video');
+      if (vid) {
+        new IntersectionObserver((es) => {
+          es.forEach((x) => { if (x.isIntersecting) vid.play().catch(() => {}); else vid.pause(); });
+        }).observe(root);
+      }
+      if (finePointer && inner) {
+        root.addEventListener('pointermove', (ev) => {
+          const r = root.getBoundingClientRect();
+          const dx = (ev.clientX - r.left) / r.width - 0.5;
+          const dy = (ev.clientY - r.top) / r.height - 0.5;
+          tRY = dx * 7;
+          tRX = -dy * 7;
+        });
+        root.addEventListener('pointerleave', () => { tRX = 0; tRY = 0; });
+      }
+    } else if (!classified) {
+      // static assembled stack for reduced motion
+      root.style.setProperty('--p', '0');
+      root.style.setProperty('--lp', '0');
+      if (readout) readout.textContent = 'EXPLODE: 000%';
+    }
+  });
+</script>

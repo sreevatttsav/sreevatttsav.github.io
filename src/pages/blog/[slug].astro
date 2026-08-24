@@ -1,0 +1,51 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+import { site } from '../../data/site';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+
+const nav = [
+  { label: '00 · HOME', href: '/' },
+  { label: '01 · DRAWINGS', href: '/#hero' },
+  { label: '02 · LOG', href: '/blog' },
+];
+---
+
+<Base nav={nav} title={`${post.data.title} — ${site.name}`}>
+  <article class="sheet post-sheet" data-draw>
+    <i class="corner-marks" aria-hidden="true"><i></i><i></i><i></i><i></i></i>
+    <span class="sheet-tab">FIELD REPORT</span>
+
+    <div class="post-meta" data-reveal>
+      <span class="kicker">{fmt(post.data.date)} // REV A</span>
+      <span class="log-tags">{post.data.tags.map((t) => <em>{t}</em>)}</span>
+    </div>
+
+    <h1 class="display post-title" style={`--d:120ms;`} data-reveal>{post.data.title}</h1>
+
+    <div class="dim" data-reveal style={`--d:200ms;`}>
+      <b>01</b>
+      <span class="dim-line"></span>
+      <span class="dim-label">SHEET 1 OF 1</span>
+    </div>
+
+    <div class="prose" data-reveal style={`--d:280ms;`}>
+      <Content />
+    </div>
+
+    <div class="contact-links">
+      <a href="/blog">← ALL ENTRIES</a>
+      <a href="/">DRAWING SET →</a>
+    </div>
+  </article>
+</Base>

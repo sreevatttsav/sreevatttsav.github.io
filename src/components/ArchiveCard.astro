@@ -1,0 +1,35 @@
+---
+interface Props {
+  name: string;
+  note: string;
+  img: string;
+}
+const { name, note, img } = Astro.props;
+
+const IMG_DIMS: Record<string, [number, number]> = {
+  'photos/flexure.png': [652, 387],
+  'renders/actuator-1.png': [606, 568],
+  'renders/actuator-2.png': [1280, 1058],
+  'renders/actuator-3.png': [1068, 844],
+  'renders/basketball-1.jpg': [963, 1280],
+  'renders/basketball-2.jpg': [1800, 1350],
+  'renders/basketball-3.jpeg': [1600, 1204],
+  'renders/rover-1.jpeg': [1280, 960],
+  'renders/rover-2.jpeg': [1280, 960],
+  'renders/rover-3.jpeg': [720, 1280],
+};
+const dims = IMG_DIMS[img.replace(/^\//, '')];
+---
+
+<a class="bin-card" href={img}>
+  <span class="thumb">
+    <img src={img} alt={name} loading="lazy"
+      width={dims?.[0]} height={dims?.[1]}
+      onerror="this.remove()" />
+    <span style="position:absolute">IMAGE SLOT</span>
+  </span>
+  <span class="meta">
+    <strong>{name}</strong>
+    <span>{note}</span>
+  </span>
+</a>

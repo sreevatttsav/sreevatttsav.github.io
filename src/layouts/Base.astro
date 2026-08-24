@@ -1,0 +1,312 @@
+---
+import '@fontsource/archivo-black';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/600.css';
+import '@fontsource/space-grotesk/400.css';
+import '@fontsource/space-grotesk/500.css';
+import '../styles/global.css';
+
+interface NavItem {
+  id?: string;
+  label: string;
+  href?: string;
+}
+interface Props {
+  nav: NavItem[];
+  title: string;
+}
+const { nav, title } = Astro.props;
+const mobileNav = nav.map((item) => ({ id: item.id, href: item.href, label: item.label.split('·').pop().trim() }));
+const navHref = (item: NavItem) => item.href ?? `#${item.id}`;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div class="sheet-frame" aria-hidden="true"></div>
+
+    <div class="crosshair x" aria-hidden="true"></div>
+    <div class="crosshair y" aria-hidden="true"></div>
+
+    <nav class="rail" aria-label="Sheets">
+      <span class="rail-progress" aria-hidden="true"></span>
+      {nav.map((item) => (
+        <a href={navHref(item)} data-rail-link title={item.label}>{item.label}</a>
+      ))}
+    </nav>
+
+    <nav class="mobile-nav" aria-label="Sheets">
+      {mobileNav.map((item) => (
+        <a href={item.href ?? `#${item.id}`} data-rail-link>{item.label}</a>
+      ))}
+    </nav>
+
+    <div class="coord-readout" data-coords aria-hidden="true">X:0000 Y:0000 // UNITS:MM</div>
+
+    <main>
+      <slot />
+    </main>
+
+    <script define:vars={{ nav }}>
+      (() => {
+        document.documentElement.classList.add('js');
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const finePointer = window.matchMedia('(pointer: fine)').matches;
+        const delayOf = (el) => parseFloat(getComputedStyle(el).getPropertyValue('--d')) || 0;
+
+        /* ---- rail active state ---- */
+        const links = [...document.querySelectorAll('[data-rail-link]')];
+        const byId = Object.fromEntries(links.map((l) => [l.getAttribute('href').slice(1), l]));
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (e.isIntersecting && byId[e.target.id]) {
+                links.forEach((l) => l.classList.remove('active'));
+                byId[e.target.id].classList.add('active');
+              }
+            });
+          },
+          { rootMargin: '-40% 0px -55% 0px' }
+        );
+        nav.forEach((n) => {
+          const el = document.getElementById(n.id);
+          if (el) io.observe(el);
+        });
+
+        /* ---- text scramble (plotter/terminal output) ---- */
+        const SCRAMBLE_CHARS = '█▓▒░<>/—_';
+        const scramble = (el) => {
+          if (reduced || el.dataset.scrambled || el.isConnected === false) return;
+          el.dataset.scrambled = '1';
+          const orig = el.dataset.orig || (el.dataset.orig = el.textContent);
+          const dur = 650;
+          const start = performance.now();
+          const tick = (t) => {
+            if (el.dataset.scrambled === 'abort') return; // live element reclaimed the text
+            const k = Math.min(1, (t - start) / dur);
+            const n = Math.floor(k * orig.length);
+            let out = orig.slice(0, n);
+            for (let i = n; i < orig.length; i++) {
+              out += orig[i] === ' ' ? ' ' : SCRAMBLE_CHARS[(Math.random() * SCRAMBLE_CHARS.length) | 0];
+            }
+            el.textContent = out;
+            if (k < 1) requestAnimationFrame(tick);
+            else el.textContent = orig;
+          };
+          requestAnimationFrame(tick);
+        };
+        document
+          .querySelectorAll('.kicker, .viewport-hud span, .drop-note, .spec-card header span')
+          .forEach((el) => el.setAttribute('data-scramble', ''));
+
+        /* ---- number count-ups ---- */
+        const countUp = (b, delay) => {
+          if (b.dataset.counted) return;
+          b.dataset.counted = '1';
+          const m = b.textContent.trim().match(/^([+\-−]?)(\d+)([°×%]?)$/);
+          if (!m) return;
+          const sign = m[1] || '';
+          const target = +m[2];
+          const suffix = m[3] || '';
+          if (reduced || target === 0) { b.textContent = sign + target + suffix; return; }
+          setTimeout(() => {
+            const dur = 900;
+            const start = performance.now();
+            const tick = (t) => {
+              const k = Math.min(1, (t - start) / dur);
+              const e = 1 - Math.pow(1 - k, 3);
+              b.textContent = sign + Math.round(target * e) + suffix;
+              if (k < 1) requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+          }, delay);
+        };
+
+        /* ---- scroll reveals (also drives draw-on, scramble, counters, quake) ---- */
+        const onReveal = (el) => {
+          const d = delayOf(el);
+          if (el.hasAttribute('data-draw')) el.classList.add('in-draw');
+          if (el.matches('[data-scramble]')) setTimeout(() => scramble(el), d);
+          el.querySelectorAll('[data-scramble]').forEach((s, i) => setTimeout(() => scramble(s), d + i * 90));
+          if (el.classList.contains('dim')) {
+            const b = el.querySelector('b');
+            if (b) countUp(b, d + 400);
+          }
+          if (el.classList.contains('stamp') && !reduced) {
+            const sheet = el.closest('.sheet');
+            if (sheet) {
+              setTimeout(() => {
+                sheet.classList.add('quake');
+                sheet.addEventListener('animationend', () => sheet.classList.remove('quake'), { once: true });
+              }, d + 300);
+            }
+          }
+        };
+        const revealables = document.querySelectorAll('[data-reveal], [data-draw]');
+        const rio = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (e.isIntersecting) {
+                e.target.classList.add('in');
+                onReveal(e.target);
+                rio.unobserve(e.target);
+              }
+            });
+          },
+          { threshold: 0.12 }
+        );
+        revealables.forEach((el) => rio.observe(el));
+
+        /* scrambles not wrapped in a reveal container fire on their own —
+           live-readout elements ([data-readout]) opt out: they update every frame */
+        const freeScr = [...document.querySelectorAll('[data-scramble]')].filter(
+          (el) => !el.hasAttribute('data-readout') && !el.closest('[data-reveal], [data-draw]')
+        );
+        const sio = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (e.isIntersecting) {
+                scramble(e.target);
+                sio.unobserve(e.target);
+              }
+            });
+          },
+          { threshold: 0.4 }
+        );
+        freeScr.forEach((el) => sio.observe(el));
+
+        /* ---- plotter draw-on borders ---- */
+        const drawables = [...document.querySelectorAll('[data-draw]')];
+        if (!reduced) {
+          const sizeRect = (el) => {
+            const rect = el.querySelector('.draw-rect');
+            if (!rect) return;
+            rect.setAttribute('width', el.offsetWidth);
+            rect.setAttribute('height', el.offsetHeight);
+          };
+          drawables.forEach((el) => {
+            if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('class', 'draw-svg');
+            svg.setAttribute('aria-hidden', 'true');
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('class', 'draw-rect');
+            rect.setAttribute('x', '2');
+            rect.setAttribute('y', '2');
+            rect.setAttribute('pathLength', '1');
+            svg.appendChild(rect);
+            el.appendChild(svg);
+            el.classList.add('has-draw');
+            sizeRect(el);
+          });
+          let rT;
+          window.addEventListener('resize', () => {
+            clearTimeout(rT);
+            rT = setTimeout(() => drawables.forEach(sizeRect), 150);
+          });
+          if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => drawables.forEach(sizeRect));
+          }
+        }
+
+        /* ---- capability ticker: duplicate sets until one loop >= strip width ---- */
+        const strip = document.querySelector('.capability-strip');
+        const track = strip && strip.querySelector('.ticker-track');
+        if (strip && track) {
+          const build = () => {
+            if (track.dataset.built) return;
+            track.dataset.built = '1';
+            const originals = [...track.children];
+            const setW = originals.reduce((w, el) => w + el.offsetWidth, 0);
+            if (!setW) return;
+            const need = Math.max(1, Math.ceil(strip.clientWidth / setW));
+            for (let s = 1; s < need; s++) originals.forEach((o) => track.appendChild(o.cloneNode(true)));
+            [...track.children].forEach((el) => track.appendChild(el.cloneNode(true))); // x2 for seamless -50% loop
+            if (!reduced) track.classList.add('ticker-on');
+          };
+          (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(build);
+        }
+
+        /* ---- shared rAF loop: crosshair lerp, readout, rail progress, hero parallax ---- */
+        const coords = document.querySelector('[data-coords]');
+        const railProg = document.querySelector('.rail-progress');
+        const heroName = document.querySelector('.hero-name');
+        let tx = -100, ty = -100, cx = -100, cy = -100;
+        let nx = 0, ny = 0, hnx = 0, hny = 0;
+        let crossOn = false;
+
+        window.addEventListener('pointermove', (ev) => {
+          tx = ev.clientX;
+          ty = ev.clientY;
+          nx = (ev.clientX / window.innerWidth) * 2 - 1;
+          ny = (ev.clientY / window.innerHeight) * 2 - 1;
+          if (!crossOn && !reduced) {
+            crossOn = true;
+            document.body.classList.add('crosshairs-on');
+          }
+          if (reduced && coords) {
+            coords.textContent = `X:${String(ev.clientX).padStart(4, '0')} Y:${String(ev.clientY).padStart(4, '0')} // UNITS:MM`;
+          }
+        }, { passive: true });
+
+        const loop = () => {
+          requestAnimationFrame(loop);
+          if (railProg) {
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            railProg.style.transform = `scaleY(${max > 0 ? window.scrollY / max : 0})`;
+          }
+          if (reduced) return;
+          if (crossOn) {
+            cx += (tx - cx) * 0.22;
+            cy += (ty - cy) * 0.22;
+            const r = document.documentElement;
+            r.style.setProperty('--mx', cx + 'px');
+            r.style.setProperty('--my', cy + 'px');
+            if (coords) {
+              coords.textContent = `X:${String(Math.round(cx)).padStart(4, '0')} Y:${String(Math.round(cy)).padStart(4, '0')} // UNITS:MM`;
+            }
+            if (heroName && finePointer) {
+              hnx += (nx - hnx) * 0.05;
+              hny += (ny - hny) * 0.05;
+              heroName.style.transform = `translate(${hnx * 10}px, ${hny * 7}px)`;
+            }
+          }
+        };
+        requestAnimationFrame(loop);
+
+        /* ---- bin card 3D tilt ---- */
+        if (finePointer && !reduced) {
+          document.querySelectorAll('.bin-card').forEach((card) => {
+            card.addEventListener('pointermove', (ev) => {
+              const r = card.getBoundingClientRect();
+              const dx = (ev.clientX - r.left) / r.width - 0.5;
+              const dy = (ev.clientY - r.top) / r.height - 0.5;
+              card.style.transform = `translate(-4px, -4px) rotateX(${(-dy * 9).toFixed(2)}deg) rotateY(${(dx * 9).toFixed(2)}deg)`;
+            });
+            card.addEventListener('pointerleave', () => {
+              card.style.transform = '';
+            });
+          });
+
+          /* ---- magnetic contact links ---- */
+          document.querySelectorAll('.contact-links a').forEach((a) => {
+            a.addEventListener('pointermove', (ev) => {
+              const r = a.getBoundingClientRect();
+              const dx = ev.clientX - (r.left + r.width / 2);
+              const dy = ev.clientY - (r.top + r.height / 2);
+              a.style.transform = `translate(${(-3 + dx * 0.22).toFixed(1)}px, ${(-3 + dy * 0.22).toFixed(1)}px)`;
+            });
+            a.addEventListener('pointerleave', () => {
+              a.style.transform = '';
+            });
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>
