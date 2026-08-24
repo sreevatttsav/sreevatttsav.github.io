@@ -7,7 +7,6 @@ export const site = {
   phone: '+91 8867650302',
   email: 'sreevatsavprasath@gmail.com',
   socials: [
-    { label: '@sreevatttsav', href: 'https://instagram.com/sreevatttsav' },
     { label: '@Vats_42', href: 'https://x.com/Vats_42' },
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/sreevatsav-prasath-b79a1225b' },
     { label: 'GitHub', href: 'https://github.com/sreevatttsav' },
