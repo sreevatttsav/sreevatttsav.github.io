@@ -77,12 +77,16 @@ const layerDims = layers.map((l) => (l.img ? IMG_DIMS[l.img.replace(/^\//, '')] 
     const classified = root.classList.contains('is-classified');
     let p = 0; // smoothed explode progress
     let tRX = 0, tRY = 0, cRX = 0, cRY = 0; // pointer tilt state
+    /* phones: no sticky pinning, so progress tracks the viewport itself and
+       layers materialize fast — otherwise they linger semi-transparent */
+    const compactMQ = window.matchMedia('(max-width: 900px)');
 
     const target = () => {
-      if (!section) return 0;
-      const r = section.getBoundingClientRect();
+      const basis = compactMQ.matches ? root : section;
+      if (!basis) return 0;
+      const r = basis.getBoundingClientRect();
       const vh = window.innerHeight;
-      // progress 0→1 while section crosses the viewport
+      // progress 0→1 while the basis crosses the viewport
       return Math.min(1, Math.max(0, (vh - r.top) / (r.height + vh)));
     };
 
@@ -90,6 +94,9 @@ const layerDims = layers.map((l) => (l.img ? IMG_DIMS[l.img.replace(/^\//, '')] 
       p += (target() - p) * 0.12; // critically-damped feel
       if (Math.abs(target() - p) < 0.0005) p = target();
 
+      const compact = compactMQ.matches;
+      const layerRamp = compact ? 3.4 : 1.9; // opacity ramp for lower layers
+      const tagRamp = compact ? 4 : 2.2;     // opacity ramp for layer tags
       const spreadBase = Math.min(160, root.offsetWidth * 0.28); // px of vertical separation per depth step
       const drift = p * Math.min(26, root.offsetWidth * 0.055);  // alternating horizontal drift
       const spread = p * spreadBase;
@@ -99,9 +106,9 @@ const layerDims = layers.map((l) => (l.img ? IMG_DIMS[l.img.replace(/^\//, '')] 
         const rise = d < 0 ? spread * 0.7 : spread; // top layer rises less — its tag stays in frame
         l.style.transform = `translate(${side * d * drift}px, ${d * rise}px) rotate(${d * p * 2.6}deg)`;
         // lower layers materialize as they separate — rest state reads as one clean assembly
-        if (d > 0) l.style.opacity = Math.min(1, p * 1.9).toFixed(3);
+        if (d > 0) l.style.opacity = Math.min(1, p * layerRamp).toFixed(3);
         const tag = l.querySelector('.tag');
-        if (tag) tag.style.opacity = Math.min(1, p * 2.2).toFixed(3);
+        if (tag) tag.style.opacity = Math.min(1, p * tagRamp).toFixed(3);
       });
       root.style.setProperty('--p', p.toFixed(4));
       if (readout) readout.textContent = `EXPLODE: ${String(Math.round(p * 100)).padStart(3, '0')}%`;
