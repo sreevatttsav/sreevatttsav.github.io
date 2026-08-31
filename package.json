@@ -12,6 +12,6 @@
     "@fontsource/archivo-black": "^5.2.5",
     "@fontsource/ibm-plex-mono": "^5.2.5",
     "@fontsource/space-grotesk": "^5.2.5",
-    "astro": "^5.12.3"
+    "astro": "^7.2.9"
   }
 }
